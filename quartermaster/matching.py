@@ -32,15 +32,31 @@ ADJACENT: set[frozenset[Category]] = {
 }
 
 
+CATEGORY_FUZZY_FLOOR = 60.0
+
+
 def _as_category(value) -> Category | None:
+    """Parse a category value from the model. Exact spelling is asked for in
+    the prompt, but models paraphrase ("mobility" for "mobility_aid"), so a
+    fuzzy fallback stands behind the exact match rather than silently
+    discarding the whole category signal — losing it costs half the score."""
     if isinstance(value, Category):
         return value
     if not value:
         return None
+
+    normalized = str(value).strip().lower().replace(" ", "_").replace("-", "_")
     try:
-        return Category(str(value).strip().lower().replace(" ", "_"))
+        return Category(normalized)
     except ValueError:
-        return None
+        pass
+
+    best_category, best_score = None, 0.0
+    for category in Category:
+        score = fuzz.ratio(normalized, category.value)
+        if score > best_score:
+            best_category, best_score = category, score
+    return best_category if best_score >= CATEGORY_FUZZY_FLOOR else None
 
 
 def _category_score(wanted: Category | None, offered: Category | None) -> tuple[float, str]:

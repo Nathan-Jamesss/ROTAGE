@@ -15,6 +15,7 @@ from . import ledger, matching, store, threshold
 from .extract import extract_with_rotation
 from .schema import (
     Decision,
+    ExtractedField,
     Extraction,
     IntakeKind,
     Outcome,
@@ -40,6 +41,18 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _backfill_known_name(extraction: Extraction, known_name: str) -> Extraction:
+    """The channel always knows who sent a message — a WhatsApp sender, a
+    named donor — independent of whether the message text states it. Asking
+    someone to restate their own name because the model, correctly, wouldn't
+    invent one from the message body would be a needless escalation."""
+    if not extraction.requester_name.present and known_name:
+        extraction.requester_name = ExtractedField(
+            value=known_name, confidence=1.0, source="form"
+        )
+    return extraction
+
+
 def process_need(
     requester: str, message: str, *, extractor=extract_with_rotation
 ) -> Decision:
@@ -47,6 +60,7 @@ def process_need(
     extraction = extractor(message)
     extraction.kind = IntakeKind.NEED
     extraction = threshold.merge_vulnerable_flags(extraction, message)
+    extraction = _backfill_known_name(extraction, requester)
 
     request = Request(
         id=store.next_id("q", store.load_requests()),
@@ -101,6 +115,7 @@ def process_donation(
     reverse — the same matching engine, pointed the other way."""
     extraction = extractor(message)
     extraction.kind = IntakeKind.DONATION
+    extraction = _backfill_known_name(extraction, donor)
 
     try:
         quantity = int(float(extraction.quantity.value))

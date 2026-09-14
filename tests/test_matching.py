@@ -189,6 +189,23 @@ def test_closed_needs_are_ignored_in_reverse() -> None:
     assert matching.rank_reverse(donation, needs) == []
 
 
+def test_paraphrased_category_still_matches() -> None:
+    """A live extraction once returned "mobility" instead of "mobility_aid"
+    and lost the entire 50-point category component, dropping a perfect
+    wheelchair match below the auto-resolve threshold. The parser must
+    tolerate this rather than silently discarding the category signal."""
+    need = _need(category=ExtractedField(value="mobility", confidence=0.9))
+    candidate = matching.rank(need, [_resource()])[0]
+    assert candidate.breakdown["category_match"] == matching.W_CATEGORY
+    assert candidate.score >= 75.0
+
+
+def test_unrecognizable_category_still_scores_zero() -> None:
+    need = _need(category=ExtractedField(value="xyzzy_plugh", confidence=0.9))
+    candidate = matching.rank(need, [_resource()])[0]
+    assert candidate.breakdown["category_match"] == 0.0
+
+
 def test_unknown_category_scores_zero_for_that_component() -> None:
     need = _need(category=ExtractedField(value=None, confidence=0.0))
     candidate = matching.rank(need, [_resource()])[0]
