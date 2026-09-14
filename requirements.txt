@@ -1,6 +1,6 @@
 strands-agents
 strands-agents-tools
-litellm
+google-genai
 pydantic>=2.0
 rapidfuzz
 streamlit
