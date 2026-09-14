@@ -45,7 +45,12 @@ CATEGORY_OPTIONS = [
 
 def _init_state() -> None:
     if "deterministic" not in st.session_state:
-        st.session_state.deterministic = not llm.keys_configured()
+        # Default to deterministic regardless of whether a key is
+        # configured. On a public deploy, Gemini's free-tier quota
+        # (5 req/min) is shared across every visitor — a judge's first
+        # click should never depend on whether someone else just used it up.
+        # Live mode is one toggle away for anyone who wants to see it.
+        st.session_state.deterministic = True
     if "seeded" not in st.session_state:
         store.reset()
         st.session_state.seeded = True
