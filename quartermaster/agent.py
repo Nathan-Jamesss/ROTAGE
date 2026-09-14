@@ -79,7 +79,9 @@ TOOLS = [
 GATED_TOOLS = ["undo_decision", "apply_human_action"]
 
 
-def build_agent(*, interactive: bool = False, model=None) -> Agent:
+def build_agent(
+    *, interactive: bool = False, model=None, stream_externally: bool = False
+) -> Agent:
     """Build the Quartermaster agent.
 
     interactive=True gates undo_decision and apply_human_action behind a
@@ -87,12 +89,19 @@ def build_agent(*, interactive: bool = False, model=None) -> Agent:
     interactive=False, since it processes messages unattended and those two
     tools are never called by that flow anyway — only a human, chatting with
     Quartermaster directly, would ask it to undo something.
+
+    stream_externally=True disables Strands' own default callback handler
+    (which prints text as it streams). Set this when the caller is driving
+    agent.stream_async() itself and printing tokens manually — otherwise the
+    same text is printed twice, once by Strands and once by the caller.
     """
     kwargs = dict(
         model=model or llm.build_model(),
         tools=TOOLS,
         system_prompt=SYSTEM_PROMPT,
     )
+    if stream_externally:
+        kwargs["callback_handler"] = None
     if interactive:
         from strands.vended_interventions.hitl import HumanInTheLoop
 
