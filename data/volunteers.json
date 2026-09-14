@@ -1,0 +1,66 @@
+[
+  {
+    "id": "v-001",
+    "name": "Anitha Menon",
+    "skills": ["registration", "logistics", "translation"],
+    "availability": ["2026-09-20:morning", "2026-09-20:afternoon"],
+    "phone": "9846000101",
+    "location": "Kaloor"
+  },
+  {
+    "id": "v-002",
+    "name": "Rahul Varghese",
+    "skills": ["driving", "logistics"],
+    "availability": ["2026-09-20:morning", "2026-09-21:morning"],
+    "phone": "9846000102",
+    "location": "Fort Cochin"
+  },
+  {
+    "id": "v-003",
+    "name": "Sr. Teresa Jacob",
+    "skills": ["first_aid", "nursing"],
+    "availability": ["2026-09-20:morning", "2026-09-20:evening"],
+    "phone": "9846000103",
+    "location": "Tripunithura"
+  },
+  {
+    "id": "v-004",
+    "name": "Vishnu Prasad",
+    "skills": ["photography", "logistics"],
+    "availability": ["2026-09-20:afternoon"],
+    "phone": "9846000104",
+    "location": "Palarivattom"
+  },
+  {
+    "id": "v-005",
+    "name": "Fathima Rasheed",
+    "skills": ["registration", "teaching"],
+    "availability": ["2026-09-20:morning"],
+    "phone": "9846000105",
+    "location": "Aluva"
+  },
+  {
+    "id": "v-006",
+    "name": "Thomas Kurien",
+    "skills": ["driving", "first_aid"],
+    "availability": ["2026-09-20:morning", "2026-09-20:afternoon"],
+    "phone": "9846000106",
+    "location": "Angamaly"
+  },
+  {
+    "id": "v-007",
+    "name": "Divya Suresh",
+    "skills": ["logistics", "registration"],
+    "availability": ["2026-09-20:morning"],
+    "phone": "9846000107",
+    "location": "Perumbavoor"
+  },
+  {
+    "id": "v-008",
+    "name": "Joseph Mathew",
+    "skills": ["teaching", "translation"],
+    "availability": ["2026-09-21:morning", "2026-09-21:afternoon"],
+    "phone": "9846000108",
+    "location": "Muvattupuzha"
+  }
+]

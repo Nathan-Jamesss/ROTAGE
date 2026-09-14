@@ -1,0 +1,106 @@
+[
+  {
+    "id": "in-01",
+    "timestamp": "2026-09-19T21:05:00",
+    "channel": "whatsapp",
+    "requester": "Meera Pillai",
+    "message": "need a wheelchair for 2 weeks, my father is recovering from a fall, we are in kaloor"
+  },
+  {
+    "id": "in-02",
+    "timestamp": "2026-09-19T21:40:00",
+    "channel": "whatsapp",
+    "requester": "Kolenchery Round Table",
+    "message": "we'd like to donate 2 more commode chairs, good condition, kolenchery"
+  },
+  {
+    "id": "in-03",
+    "timestamp": "2026-09-19T22:10:00",
+    "channel": "whatsapp",
+    "requester": "Ligi Thomas",
+    "message": "i can do the first aid post at the ceremony saturday morning, i'm a staff nurse"
+  },
+  {
+    "id": "in-04",
+    "timestamp": "2026-09-19T22:50:00",
+    "channel": "whatsapp",
+    "requester": "Baby Chacko",
+    "message": "requesting an oxygen concentrator for a week, angamaly, will return after"
+  },
+  {
+    "id": "in-05",
+    "timestamp": "2026-09-19T23:15:00",
+    "channel": "whatsapp",
+    "requester": "Sunil Abraham",
+    "message": "can i borrow a walker for my father, fort cochin"
+  },
+  {
+    "id": "in-06",
+    "timestamp": "2026-09-19T23:50:00",
+    "channel": "whatsapp",
+    "requester": "Deepa Nair",
+    "message": "need a wheelchair for 2 weeks, my mother is 78 years old and just had hip surgery, we are in kaloor",
+    "note": "headline scenario — elderly + surgery, must escalate to SAFETY_HOLD even though a perfect match exists"
+  },
+  {
+    "id": "in-07",
+    "timestamp": "2026-09-20T00:20:00",
+    "channel": "whatsapp",
+    "requester": "Prasanna Nair",
+    "message": "put me on first aid duty saturday morning too, i have basic first aid training",
+    "note": "contested — s-003 first-aid slot already filled by Ligi Thomas (in-03)"
+  },
+  {
+    "id": "in-08",
+    "timestamp": "2026-09-20T00:55:00",
+    "channel": "whatsapp",
+    "requester": "Reji Varghese",
+    "message": "hospital bed needed for home care, returning it in a month, kaloor"
+  },
+  {
+    "id": "in-09",
+    "timestamp": "2026-09-20T01:30:00",
+    "channel": "whatsapp",
+    "requester": "Anu Kurian",
+    "message": "commode chair request, kolenchery"
+  },
+  {
+    "id": "in-10",
+    "timestamp": "2026-09-20T02:05:00",
+    "channel": "whatsapp",
+    "requester": "Sherin Joseph",
+    "message": "requesting 3 nebulizers for our perumbavoor care center, actually we only have 1 patient who needs one at the moment",
+    "note": "contradiction — 3 requested vs 1 patient described"
+  },
+  {
+    "id": "in-11",
+    "timestamp": "2026-09-20T02:40:00",
+    "channel": "whatsapp",
+    "requester": "Bincy Sebastian",
+    "message": "need a large led magnifier for my eyes, tripunithura"
+  },
+  {
+    "id": "in-12",
+    "timestamp": "2026-09-20T03:20:00",
+    "channel": "whatsapp",
+    "requester": "Manoj Pillai",
+    "message": "need a digital hearing aid device for my father, muvattupuzha",
+    "note": "unmatched — nothing in the pool covers hearing aids"
+  },
+  {
+    "id": "in-13",
+    "timestamp": "2026-09-20T04:10:00",
+    "channel": "whatsapp",
+    "requester": "Sabu Thomas",
+    "message": "need some equipment for the thing tomorrow, kaloor area",
+    "note": "vague — low confidence on category and item"
+  },
+  {
+    "id": "in-14",
+    "timestamp": "2026-09-20T05:30:00",
+    "channel": "whatsapp",
+    "requester": "Lissy Abraham",
+    "message": "how do i get a tax receipt for my donation last month?",
+    "note": "out of scope — administrative question, not a need/donation/volunteer signup"
+  }
+]

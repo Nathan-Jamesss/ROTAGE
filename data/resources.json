@@ -1,0 +1,134 @@
+[
+  {
+    "id": "r-001",
+    "donor": "Rotary Club of Kochi United",
+    "category": "mobility_aid",
+    "item": "folding wheelchairs, refurbished",
+    "quantity": 4,
+    "unit": "units",
+    "condition": "good",
+    "location": "Kaloor",
+    "logged_at": "2026-09-10T10:15:00"
+  },
+  {
+    "id": "r-002",
+    "donor": "RC Cochin Knights",
+    "category": "mobility_aid",
+    "item": "aluminium walkers, adjustable height",
+    "quantity": 6,
+    "unit": "units",
+    "condition": "good",
+    "location": "Fort Cochin",
+    "logged_at": "2026-09-11T09:00:00"
+  },
+  {
+    "id": "r-003",
+    "donor": "Angamaly Heritage",
+    "category": "respiratory",
+    "item": "oxygen concentrators, 5L capacity",
+    "quantity": 2,
+    "unit": "units",
+    "condition": "good, serviced",
+    "location": "Angamaly",
+    "logged_at": "2026-09-08T14:30:00"
+  },
+  {
+    "id": "r-004",
+    "donor": "Perumbavoor Central",
+    "category": "respiratory",
+    "item": "nebulizer machines, portable",
+    "quantity": 3,
+    "unit": "units",
+    "condition": "good",
+    "location": "Perumbavoor",
+    "logged_at": "2026-09-12T11:45:00"
+  },
+  {
+    "id": "r-005",
+    "donor": "Rotary Club of Kochi United",
+    "category": "home_care",
+    "item": "manual hospital beds, with side rails",
+    "quantity": 2,
+    "unit": "units",
+    "condition": "good",
+    "location": "Kaloor",
+    "logged_at": "2026-09-09T16:00:00"
+  },
+  {
+    "id": "r-006",
+    "donor": "Royal Heritage",
+    "category": "home_care",
+    "item": "commode chairs, foldable",
+    "quantity": 5,
+    "unit": "units",
+    "condition": "good",
+    "location": "Kolenchery",
+    "logged_at": "2026-09-11T08:20:00"
+  },
+  {
+    "id": "r-007",
+    "donor": "Muvattupuzha Heritage",
+    "category": "home_care",
+    "item": "anti-bedsore air mattresses",
+    "quantity": 3,
+    "unit": "units",
+    "condition": "new",
+    "location": "Muvattupuzha",
+    "logged_at": "2026-09-13T07:30:00"
+  },
+  {
+    "id": "r-008",
+    "donor": "RC Cochin",
+    "category": "assistive_tech",
+    "item": "handheld magnifiers, LED, for low vision",
+    "quantity": 8,
+    "unit": "units",
+    "condition": "new",
+    "location": "Tripunithura",
+    "logged_at": "2026-09-10T13:00:00"
+  },
+  {
+    "id": "r-009",
+    "donor": "Kochi United",
+    "category": "digital_health",
+    "item": "digital blood pressure monitors",
+    "quantity": 6,
+    "unit": "units",
+    "condition": "new",
+    "location": "Kaloor",
+    "logged_at": "2026-09-12T15:10:00"
+  },
+  {
+    "id": "r-010",
+    "donor": "Angamaly Heritage",
+    "category": "school_supplies",
+    "item": "notebook sets with geometry boxes",
+    "quantity": 40,
+    "unit": "sets",
+    "condition": "new",
+    "location": "Angamaly",
+    "logged_at": "2026-09-07T09:45:00"
+  },
+  {
+    "id": "r-011",
+    "donor": "Perumbavoor Central",
+    "category": "food",
+    "item": "rice, 25kg bags",
+    "quantity": 10,
+    "unit": "bags",
+    "condition": "good",
+    "location": "Perumbavoor",
+    "logged_at": "2026-09-13T06:50:00"
+  },
+  {
+    "id": "r-012",
+    "donor": "Royal Heritage",
+    "category": "furniture",
+    "item": "friendship benches for public spaces (Bench of Hope)",
+    "quantity": 2,
+    "unit": "units",
+    "condition": "new",
+    "location": "Kolenchery",
+    "logged_at": "2026-09-06T12:00:00"
+  }
+]

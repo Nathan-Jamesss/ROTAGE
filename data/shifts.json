@@ -1,0 +1,62 @@
+[
+  {
+    "id": "s-001",
+    "project": "HOPE Prime Launch & District Installation Ceremony",
+    "date": "2026-09-20",
+    "slot": "morning",
+    "role": "Registration desk",
+    "required_skill": "registration",
+    "capacity": 2,
+    "assigned": ["v-001"]
+  },
+  {
+    "id": "s-002",
+    "project": "HOPE Prime Launch & District Installation Ceremony",
+    "date": "2026-09-20",
+    "slot": "morning",
+    "role": "Equipment logistics (Palliative Equipment Library handover)",
+    "required_skill": "logistics",
+    "capacity": 3,
+    "assigned": ["v-002", "v-007"]
+  },
+  {
+    "id": "s-003",
+    "project": "HOPE Prime Launch & District Installation Ceremony",
+    "date": "2026-09-20",
+    "slot": "morning",
+    "role": "First-aid post",
+    "required_skill": "first_aid",
+    "capacity": 1,
+    "assigned": []
+  },
+  {
+    "id": "s-004",
+    "project": "HOPE Prime Launch & District Installation Ceremony",
+    "date": "2026-09-20",
+    "slot": "afternoon",
+    "role": "Photography",
+    "required_skill": "photography",
+    "capacity": 1,
+    "assigned": ["v-004"]
+  },
+  {
+    "id": "s-005",
+    "project": "HOPE Prime Launch & District Installation Ceremony",
+    "date": "2026-09-20",
+    "slot": "morning",
+    "role": "Transport coordination",
+    "required_skill": "driving",
+    "capacity": 2,
+    "assigned": ["v-006"]
+  },
+  {
+    "id": "s-006",
+    "project": "HOPE Prime Launch & District Installation Ceremony",
+    "date": "2026-09-20",
+    "slot": "morning",
+    "role": "Translation desk (Malayalam / English)",
+    "required_skill": "translation",
+    "capacity": 1,
+    "assigned": []
+  }
+]
