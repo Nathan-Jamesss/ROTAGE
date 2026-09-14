@@ -7,6 +7,9 @@ it temporarily, the way they'd borrow a book.**
 Built for the [Agents for Humans Hackathon](https://agentsforhumans.devpost.com/)
 (Good Neighbor Agents track), with the [Strands Agents SDK](https://strandsagents.com).
 
+**[→ Read the pitch](https://claude.ai/code/artifact/896956d7-f546-4f24-920e-c109305d1f74)** — what it does, how it works, and the safety guarantee, in about two minutes.
+**[→ Open the live app](https://rotage.streamlit.app/)** — the actual working tool.
+
 ## What it does
 
 Rotary coordinators field requests, donations, and volunteer signups all day
