@@ -140,6 +140,30 @@ def filter_auto_matchable(
     ]
 
 
+def filter_auto_matchable_reverse(
+    candidates: list[Candidate], need_extractions: dict[str, Extraction]
+) -> list[Candidate]:
+    """The reverse-direction counterpart to filter_auto_matchable.
+
+    When a donation searches open needs, the vulnerability that matters
+    belongs to whoever asked for help, not to the donor. Each candidate is
+    blocked individually against the need it represents, rather than
+    uniformly against the donation's own (usually empty) flags.
+    """
+    blocked: list[Candidate] = []
+    for candidate in candidates:
+        need = need_extractions.get(candidate.resource_id)
+        if need and need.vulnerable_flags:
+            flags = ", ".join(f.value for f in need.vulnerable_flags)
+            reason = f"T1 vulnerable_person [{flags}] — withheld from automatic assignment"
+            blocked.append(
+                candidate.model_copy(update={"blocked": True, "blocked_reason": reason})
+            )
+        else:
+            blocked.append(candidate)
+    return blocked
+
+
 def _quantity_of(extraction: Extraction) -> int | None:
     raw = extraction.quantity.value
     if raw is None:

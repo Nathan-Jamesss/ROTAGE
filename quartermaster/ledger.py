@@ -98,9 +98,26 @@ def undo(decision_id: str) -> Decision:
 
     if decision.chosen:
         try:
+            resources = store.load_resources()
+            target = next((r for r in resources if r.id == decision.chosen), None)
+            if target and target.reserved_for:
+                requests = store.load_requests()
+                linked = next(
+                    (r for r in requests if r.id == target.reserved_for), None
+                )
+                if linked and linked.status == "matched":
+                    linked.status = "open"
+                    store.update_request(linked)
             store.release_resource(decision.chosen)
         except KeyError:
-            pass  # shift assignments are released by the caller instead
+            # Not a resource id — this decision assigned a volunteer to a
+            # shift instead. Pull them back off it.
+            shifts = store.load_shifts()
+            for shift in shifts:
+                if shift.id == decision.chosen and decision.requester in shift.assigned:
+                    shift.assigned.remove(decision.requester)
+                    store.save_shifts(shifts)
+                    break
 
     decision.outcome = Outcome.REVERSED
     decision.reversed_at = _now()
