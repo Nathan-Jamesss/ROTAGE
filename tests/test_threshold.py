@@ -27,11 +27,11 @@ def _confident(value, confidence: float = 0.95) -> ExtractedField:
 def _clean_extraction(**overrides) -> Extraction:
     """A well-formed intake that should sail through every rule."""
     base = Extraction(
-        category=_confident("bedding"),
-        item=_confident("blankets"),
-        quantity=_confident(4),
+        category=_confident("mobility_aid"),
+        item=_confident("wheelchair"),
+        quantity=_confident(1),
         requester_name=_confident("Meena R."),
-        location=_confident("Ward 7"),
+        location=_confident("Kaloor"),
     )
     for key, value in overrides.items():
         setattr(base, key, value)
@@ -39,29 +39,42 @@ def _clean_extraction(**overrides) -> Extraction:
 
 
 def _perfect_candidate(resource_id: str = "r-001", score: float = 99.9) -> Candidate:
-    return Candidate(resource_id=resource_id, label="12 woollen blankets", score=score)
+    return Candidate(resource_id=resource_id, label="folding wheelchair", score=score)
 
 
 # Messages written to slip past a naive filter. Every one of them must escalate.
+# Written for Quartermaster's real setting: HOPE Prime's Palliative Equipment
+# Library, a Rotary District 3205 project lending wheelchairs, walkers,
+# hospital beds, oxygen concentrators, and nebulizers to families who need
+# them temporarily. Because the whole catalog is medical equipment, these
+# messages deliberately do NOT rely on the item being borrowed as the signal —
+# they rely on what the message says about the person.
 ADVERSARIAL_VULNERABLE_MESSAGES = [
-    "Need 4 blankets, my mother is 78 and unwell",
-    "school supplies for my two kids",
-    "my grandmother needs her medicines",
-    "rice for the family, the baby is sick",
-    "Just need blankets. Nothing urgent at all. For my son.",
-    "routine request, wheelchair access needed",
-    "supplies for the children's home on 4th street",
-    "blankets for a 9 yo",
-    "my paati cannot walk to the centre",
-    "we were evicted last week, need bedding",
+    "Need a wheelchair for 2 weeks, my mother is 78 and just had surgery",
+    "requesting a nebulizer for my two kids, they both have chest congestion",
+    "my grandmother needs an oxygen concentrator at home",
+    "commode needed, the baby has been unwell all week",
+    "Just need a walker. Nothing urgent at all. For my son.",
+    "routine request, but he is disabled and cannot collect it himself",
+    "hospital bed needed for the children's home on 4th street",
+    "wheelchair for a 9 yo, school accident",
+    "my paati cannot walk to the centre, needs a walker delivered",
+    "we were evicted last week, still need the hospital bed we requested",
+    "oxygen concentrator for palliative care at home",
+    "nebulizer needed, patient is in hospice care",
 ]
 
 # The control group. A safety filter that flags everything is a broken filter.
+# These are Quartermaster's bread and butter: ordinary equipment loans with no
+# vulnerability signal beyond the routine fact of needing medical equipment.
 CLEAN_MESSAGES = [
-    "need 4 blankets for the house, ward 7",
-    "can you spare some rice this week",
+    "need a wheelchair for 2 weeks, recovering from a minor procedure, Kaloor",
+    "can I borrow a walker for my father, Fort Cochin",
+    "requesting an oxygen concentrator for a week, Palarivattom",
     "I would like to donate 12 notebooks",
     "available to help with registration on Saturday morning",
+    "hospital bed needed for home care, returning it in a month, Aluva",
+    "commode chair request, Tripunithura",
 ]
 
 
@@ -106,7 +119,7 @@ def test_clean_messages_are_not_flagged(message: str) -> None:
 
 def test_clean_case_auto_resolves() -> None:
     extraction = threshold.merge_vulnerable_flags(
-        _clean_extraction(), "need 4 blankets for the house, ward 7"
+        _clean_extraction(), "need a wheelchair, Kaloor"
     )
     candidates = threshold.filter_auto_matchable(extraction, [_perfect_candidate()])
 
@@ -118,7 +131,7 @@ def test_clean_case_auto_resolves() -> None:
 
 
 def test_age_under_eighteen_flags_minor() -> None:
-    flags, evidence = threshold.detect_vulnerable_flags("blankets for a 9 yo")
+    flags, evidence = threshold.detect_vulnerable_flags("wheelchair for a 9 yo, school accident")
     assert VulnerableFlag.MINOR in flags
     assert evidence is not None
 
@@ -140,7 +153,7 @@ def test_model_flags_are_honoured_even_without_keywords() -> None:
 
 
 def test_tie_escalates_rather_than_guessing() -> None:
-    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need blankets")
+    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need a wheelchair")
     candidates = [
         _perfect_candidate("r-001", 92.0),
         _perfect_candidate("r-002", 88.0),
@@ -154,7 +167,7 @@ def test_tie_escalates_rather_than_guessing() -> None:
 
 
 def test_clear_winner_does_not_escalate() -> None:
-    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need blankets")
+    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need a wheelchair")
     candidates = [
         _perfect_candidate("r-001", 95.0),
         _perfect_candidate("r-002", 60.0),
@@ -166,7 +179,7 @@ def test_clear_winner_does_not_escalate() -> None:
 
 
 def test_weak_match_escalates_as_unmatched() -> None:
-    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need blankets")
+    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need a wheelchair")
     candidates = [_perfect_candidate("r-001", 40.0)]
 
     outcome, tier, _, _ = threshold.evaluate(extraction, candidates)
@@ -176,7 +189,7 @@ def test_weak_match_escalates_as_unmatched() -> None:
 
 
 def test_no_candidates_escalates_as_unmatched() -> None:
-    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need blankets")
+    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need a wheelchair")
 
     outcome, tier, _, _ = threshold.evaluate(extraction, [])
 
@@ -205,7 +218,7 @@ def test_missing_required_field_becomes_a_question() -> None:
 
 
 def test_low_confidence_is_treated_as_missing() -> None:
-    extraction = _clean_extraction(category=_confident("bedding", 0.41))
+    extraction = _clean_extraction(category=_confident("mobility_aid", 0.41))
 
     outcome, tier, _, _ = threshold.evaluate(extraction, [_perfect_candidate()])
 
@@ -226,7 +239,7 @@ def test_contradiction_is_never_silently_resolved() -> None:
 
 def test_every_rule_is_recorded_for_the_receipt() -> None:
     """A decision is only trustworthy if you can read why it happened."""
-    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need blankets")
+    extraction = threshold.merge_vulnerable_flags(_clean_extraction(), "need a wheelchair")
     _, _, rules, _ = threshold.evaluate(extraction, [_perfect_candidate()])
 
     recorded = {r.rule for r in rules}

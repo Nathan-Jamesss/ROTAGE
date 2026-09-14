@@ -1,5 +1,8 @@
-"""Matching tests. A score a coordinator cannot interrogate is a score they
-will not trust, so the derivation is tested as carefully as the result."""
+"""Matching tests, themed to HOPE Prime's Palliative Equipment Library.
+
+A score a coordinator cannot interrogate is a score they will not trust, so
+the derivation is tested as carefully as the result.
+"""
 
 from __future__ import annotations
 
@@ -16,12 +19,12 @@ from quartermaster.schema import (
 def _resource(**overrides) -> Resource:
     defaults = dict(
         id="r-001",
-        donor="Sundaram Textiles",
-        category=Category.BEDDING,
-        item="12 woollen blankets, new",
-        quantity=12,
-        unit="pieces",
-        location="Ward 7",
+        donor="Rotary Club of Kochi United",
+        category=Category.MOBILITY_AID,
+        item="4 folding wheelchairs, refurbished",
+        quantity=4,
+        unit="units",
+        location="Kaloor",
     )
     defaults.update(overrides)
     return Resource(**defaults)
@@ -29,10 +32,10 @@ def _resource(**overrides) -> Resource:
 
 def _need(**overrides) -> Extraction:
     base = Extraction(
-        category=ExtractedField(value="bedding", confidence=0.94),
-        item=ExtractedField(value="blankets", confidence=0.9),
-        quantity=ExtractedField(value=4, confidence=0.88),
-        location=ExtractedField(value="Ward 7", confidence=0.91),
+        category=ExtractedField(value="mobility_aid", confidence=0.94),
+        item=ExtractedField(value="wheelchair", confidence=0.9),
+        quantity=ExtractedField(value=1, confidence=0.88),
+        location=ExtractedField(value="Kaloor", confidence=0.91),
         requester_name=ExtractedField(value="Meena R.", confidence=0.97),
     )
     for key, value in overrides.items():
@@ -41,10 +44,13 @@ def _need(**overrides) -> Extraction:
 
 
 def test_exact_category_beats_adjacent_beats_unrelated() -> None:
+    """mobility_aid ~ home_care (both Palliative Equipment Library items,
+    declared adjacent) should still lose to an exact wheelchair match, and
+    both should beat something unrelated like transport."""
     need = _need()
     exact = matching.rank(need, [_resource()])[0]
     adjacent = matching.rank(
-        need, [_resource(category=Category.CLOTHING, item="warm shawls")]
+        need, [_resource(category=Category.HOME_CARE, item="hospital bed")]
     )[0]
     unrelated = matching.rank(
         need, [_resource(category=Category.TRANSPORT, item="van trips")]
@@ -54,26 +60,26 @@ def test_exact_category_beats_adjacent_beats_unrelated() -> None:
 
 
 def test_fuzzy_item_match_survives_extra_words() -> None:
-    """"blankets" has to find "12 woollen blankets, new"."""
+    """"wheelchair" has to find "4 folding wheelchairs, refurbished"."""
     candidate = matching.rank(_need(), [_resource()])[0]
     assert candidate.breakdown["item_similarity"] == matching.W_ITEM
 
 
 def test_same_category_different_wording_still_matches() -> None:
-    """"school supplies" and "40 notebook sets" are the same thing.
+    """"oxygen concentrator" and "portable O2 unit" describe the same thing.
 
     Without a category-backed floor this scores too low to ever auto-resolve,
     which would make the agent useless on exactly the requests it should handle.
     """
     need = _need(
-        category=ExtractedField(value="school_supplies", confidence=0.93),
-        item=ExtractedField(value="school supplies", confidence=0.9),
-        quantity=ExtractedField(value=4, confidence=0.9),
+        category=ExtractedField(value="respiratory", confidence=0.93),
+        item=ExtractedField(value="oxygen concentrator", confidence=0.9),
+        quantity=ExtractedField(value=1, confidence=0.9),
     )
     resource = _resource(
-        category=Category.SCHOOL_SUPPLIES,
-        item="40 notebook sets with geometry boxes",
-        quantity=40,
+        category=Category.RESPIRATORY,
+        item="2 portable O2 units, 5L capacity",
+        quantity=2,
     )
     candidate = matching.rank(need, [resource])[0]
     assert candidate.score >= 75.0
@@ -88,16 +94,17 @@ def test_noise_floor_gives_no_credit_to_unrelated_wording() -> None:
 
 
 def test_insufficient_quantity_reduces_score() -> None:
-    plenty = matching.rank(_need(), [_resource(quantity=12)])[0]
-    scarce = matching.rank(_need(), [_resource(quantity=1)])[0]
+    need = _need(quantity=ExtractedField(value=2, confidence=0.9))
+    plenty = matching.rank(need, [_resource(quantity=4)])[0]
+    scarce = matching.rank(need, [_resource(quantity=1)])[0]
 
     assert plenty.breakdown["qty_sufficiency"] > scarce.breakdown["qty_sufficiency"]
     assert plenty.score > scarce.score
 
 
 def test_same_area_beats_different_area() -> None:
-    near = matching.rank(_need(), [_resource(location="Ward 7")])[0]
-    far = matching.rank(_need(), [_resource(location="Ward 22")])[0]
+    near = matching.rank(_need(), [_resource(location="Kaloor")])[0]
+    far = matching.rank(_need(), [_resource(location="Thrissur")])[0]
     assert near.score > far.score
 
 
@@ -114,9 +121,9 @@ def test_every_component_is_explained() -> None:
 
 def test_results_are_ranked_best_first() -> None:
     pool = [
-        _resource(id="r-001", location="Ward 22", category=Category.TRANSPORT),
-        _resource(id="r-002", location="Ward 7"),
-        _resource(id="r-003", location="Ward 22", category=Category.CLOTHING),
+        _resource(id="r-001", location="Thrissur", category=Category.TRANSPORT),
+        _resource(id="r-002", location="Kaloor"),
+        _resource(id="r-003", location="Thrissur", category=Category.HOME_CARE),
     ]
     ranked = matching.rank(_need(), pool)
     assert ranked[0].resource_id == "r-002"
@@ -131,19 +138,25 @@ def test_reserved_resources_are_excluded() -> None:
 
 
 def test_donation_searches_open_needs_with_the_same_engine() -> None:
-    """The bidirectional claim, tested. A donation finds the need that wanted it."""
+    """The bidirectional claim, tested.
+
+    A donated batch of wheelchairs finds the family that asked for one.
+    Same engine as need-matching, opposite direction.
+    """
     donation = Extraction(
-        category=ExtractedField(value="bedding", confidence=0.95),
-        item=ExtractedField(value="woollen blankets", confidence=0.92),
-        quantity=ExtractedField(value=12, confidence=0.99),
-        location=ExtractedField(value="Ward 7", confidence=0.9),
-        requester_name=ExtractedField(value="Sundaram Textiles", confidence=0.99),
+        category=ExtractedField(value="mobility_aid", confidence=0.95),
+        item=ExtractedField(value="folding wheelchairs", confidence=0.92),
+        quantity=ExtractedField(value=4, confidence=0.99),
+        location=ExtractedField(value="Kaloor", confidence=0.9),
+        requester_name=ExtractedField(
+            value="Rotary Club of Kochi United", confidence=0.99
+        ),
     )
     needs = [
         Request(
             id="q-001",
             requester="Meena R.",
-            raw_message="need blankets",
+            raw_message="need a wheelchair",
             extraction=_need(),
         ),
         Request(
@@ -168,7 +181,7 @@ def test_closed_needs_are_ignored_in_reverse() -> None:
         Request(
             id="q-001",
             requester="Meena R.",
-            raw_message="need blankets",
+            raw_message="need a wheelchair",
             extraction=_need(),
             status="closed",
         )

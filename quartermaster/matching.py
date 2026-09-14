@@ -23,11 +23,12 @@ W_LOCATION = 10.0
 ADJACENT_CREDIT = 0.4
 
 ADJACENT: set[frozenset[Category]] = {
-    frozenset({Category.BEDDING, Category.CLOTHING}),
+    frozenset({Category.MOBILITY_AID, Category.HOME_CARE}),
+    frozenset({Category.RESPIRATORY, Category.HOME_CARE}),
+    frozenset({Category.ASSISTIVE_TECH, Category.DIGITAL_HEALTH}),
     frozenset({Category.SCHOOL_SUPPLIES, Category.BOOKS}),
     frozenset({Category.FOOD, Category.HYGIENE}),
-    frozenset({Category.MEDICAL, Category.HYGIENE}),
-    frozenset({Category.FURNITURE, Category.BEDDING}),
+    frozenset({Category.FURNITURE, Category.HOME_CARE}),
 }
 
 

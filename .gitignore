@@ -6,6 +6,9 @@ PROJECT_BRIEF.md
 COMPETITIVE_RESEARCH.md
 BUILD_PLAN.md
 
+# source material — internal district documents, too large for git anyway
+rotary/
+
 # python
 __pycache__/
 *.py[cod]

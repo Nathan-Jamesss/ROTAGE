@@ -24,11 +24,19 @@ class VulnerableFlag(str, Enum):
 
 
 class Category(str, Enum):
+    """Themed to HOPE Prime, Rotary District 3205's 2026-27 flagship
+    programme. MOBILITY_AID / RESPIRATORY / HOME_CARE cover the Palliative
+    Equipment Library; the rest cover the district's other HOPE Prime
+    projects (Eyes of Hope, Digital Health Literacy) and routine outreach."""
+
+    MOBILITY_AID = "mobility_aid"        # wheelchairs, walkers, crutches
+    RESPIRATORY = "respiratory"          # oxygen concentrators, nebulizers
+    HOME_CARE = "home_care"              # hospital beds, commodes, mattresses
+    ASSISTIVE_TECH = "assistive_tech"    # Eyes of Hope: magnifiers, screen readers
+    DIGITAL_HEALTH = "digital_health"    # BP/sugar monitors, telehealth setup
     FOOD = "food"
-    BEDDING = "bedding"
     SCHOOL_SUPPLIES = "school_supplies"
     CLOTHING = "clothing"
-    MEDICAL = "medical"
     TRANSPORT = "transport"
     HYGIENE = "hygiene"
     BOOKS = "books"

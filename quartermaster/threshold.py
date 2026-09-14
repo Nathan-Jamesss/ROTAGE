@@ -31,9 +31,12 @@ REQUIRED_FIELDS = ("category", "quantity", "requester_name")
 
 
 VULNERABLE_KEYWORDS: dict[VulnerableFlag, tuple[str, ...]] = {
+    # "minor" itself is deliberately excluded: in a medical-equipment context
+    # "minor procedure" / "minor injury" is common English for "small", not a
+    # reference to a child, and would false-positive on routine traffic.
     VulnerableFlag.MINOR: (
         "child", "children", "kid", "kids", "baby", "babies", "infant",
-        "toddler", "son", "daughter", "minor", "students", "schoolchildren",
+        "toddler", "son", "daughter", "students", "schoolchildren",
         "children's home", "orphan", "newborn",
     ),
     VulnerableFlag.ELDERLY: (
@@ -41,14 +44,20 @@ VULNERABLE_KEYWORDS: dict[VulnerableFlag, tuple[str, ...]] = {
         "grandpa", "senior citizen", "old age", "aged parent", "paati",
         "thatha",
     ),
+    # Deliberately narrow. Quartermaster's own catalog is medical equipment
+    # (wheelchairs, oxygen concentrators, hospital beds), so ordinary item
+    # nouns like "hospital", "medicine", or "wheelchair" cannot be
+    # vulnerability signals here or nothing would ever auto-resolve. This
+    # list flags how serious the person's situation is, not what they are
+    # borrowing.
     VulnerableFlag.MEDICAL: (
-        "medical", "medicine", "medicines", "hospital", "surgery", "ill",
-        "unwell", "sick", "diabetic", "heart condition", "treatment",
-        "cancer", "dialysis", "injured", "fever", "not well", "bedridden",
+        "cancer", "dialysis", "bedridden", "terminal", "critical condition",
+        "heart condition", "surgery", "ventilator", "icu", "palliative",
+        "end of life", "hospice",
     ),
     VulnerableFlag.DISABILITY: (
         "disabled", "disability", "blind", "deaf", "special needs",
-        "wheelchair", "differently abled",
+        "differently abled", "cannot walk", "cannot see", "cannot hear",
     ),
     VulnerableFlag.SAFETY: (
         "unsafe", "violence", "abuse", "eviction", "evicted", "homeless",
@@ -65,6 +74,10 @@ def detect_vulnerable_flags(text: str) -> tuple[list[VulnerableFlag], str | None
 
     Belt and braces. The safety path never depends on the model alone, so this
     result is unioned with whatever the model reported, never intersected.
+
+    Borrowing a wheelchair is Quartermaster's most routine transaction, not a
+    red flag, so the keyword lists name conditions and circumstances, never
+    the equipment itself.
     """
     if not text:
         return [], None
