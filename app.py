@@ -1,10 +1,14 @@
 """Quartermaster — Daybreak.
 
-The Streamlit UI. Calls the pipeline directly (tools.py) rather than routing
-every action through the conversational Agent: one model call per message
-instead of two, which matters on a free-tier quota during a live demo. The
-Agent's own orchestration loop is what main.py demonstrates instead — this UI
-is where a coordinator would actually work.
+The Streamlit UI. Daybreak, New Intake, and Pool call the pipeline directly
+(tools.py) rather than routing through the conversational Agent: one model
+call per message instead of two, which matters on a free-tier quota during a
+live demo — this is where a coordinator would actually work day to day.
+
+The Agent tab is different on purpose: it talks to the real Strands `Agent`
+object (agent.py), unmodified, so a visitor can see it reason about a message
+and decide which tool to call, rather than only ever seeing pre-decided
+results.
 """
 
 from __future__ import annotations
@@ -22,6 +26,7 @@ for _name in ("GEMINI_API_KEY", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3"):
     if _name in st.secrets and not os.getenv(_name):
         os.environ[_name] = st.secrets[_name]
 
+from quartermaster import agent as agent_module
 from quartermaster import deterministic, ledger, llm, pipeline, store, triage
 from quartermaster.schema import HumanAction, Tier
 
@@ -80,6 +85,7 @@ def sidebar() -> None:
     with st.sidebar:
         st.title("Quartermaster")
         st.caption("HOPE Prime · Rotary District 3205")
+        st.caption(f"🤖 Strands Agent · {llm.MODEL_ID} · {len(agent_module.TOOLS)} tools")
 
         st.session_state.deterministic = st.toggle(
             "Deterministic mode",
@@ -220,6 +226,90 @@ def view_intake() -> None:
             st.code(ledger.render_receipt(decision), language=None)
 
 
+def view_agent_console() -> None:
+    st.subheader("🤖 Talk to the agent directly")
+    st.caption(
+        "This sends your message to the real Strands `Agent` object — the "
+        "same one in `agent.py` — not a pre-wired form. It reads the "
+        "message, decides what kind it is, and calls the matching tool "
+        "itself. Daybreak and New Intake call the underlying pipeline "
+        "directly to save quota; this tab is where you actually watch the "
+        "agent think."
+    )
+
+    with st.expander("What the agent knows about itself"):
+        st.write(f"**Model:** `{llm.MODEL_ID}` (Gemini, via Strands' native provider)")
+        st.write(
+            "**Tools:** "
+            + ", ".join(f"`{t.tool_spec['name']}`" for t in agent_module.TOOLS)
+        )
+        st.write("**System prompt:**")
+        st.code(agent_module.SYSTEM_PROMPT, language=None)
+
+    if not llm.keys_configured():
+        st.warning(
+            "No GEMINI_API_KEY configured, so there's no live model to talk "
+            "to. Daybreak and New Intake still work fully offline — this "
+            "tab specifically needs a real Gemini call, since the agent's "
+            "own decision about which tool to call always goes through the "
+            "model, regardless of the deterministic toggle."
+        )
+        return
+
+    st.caption(
+        "⚠ Uses a live Gemini call per message (free tier: 5 requests/minute, "
+        "shared across every visitor to this page). A couple of messages is plenty."
+    )
+
+    if "agent_instance" not in st.session_state:
+        st.session_state.agent_instance = agent_module.build_agent()
+        st.session_state.agent_transcript = []
+
+    with st.form("agent_form", clear_on_submit=True):
+        name = st.text_input("From")
+        message = st.text_area("Message", height=80)
+        sent = st.form_submit_button("Send to agent", type="primary")
+
+    if sent:
+        if not name or not message:
+            st.error("Both fields are required.")
+        else:
+            with st.spinner("Agent is reading, deciding, and calling a tool..."):
+                prompt = f"Message from {name}: {message}"
+                try:
+                    result = st.session_state.agent_instance(prompt)
+                    reply = str(result)
+                except Exception as error:  # noqa: BLE001
+                    reply = f"(the agent hit an error: {error})"
+            st.session_state.agent_transcript.append((name, message, reply))
+
+    for who, said, reply in reversed(st.session_state.agent_transcript):
+        st.markdown(f"**{who}:** {said}")
+        st.markdown(f"**Quartermaster:** {reply}")
+        st.divider()
+
+    if st.session_state.agent_transcript:
+        summary = st.session_state.agent_instance.event_loop_metrics.get_summary()
+        usage = summary.get("accumulated_usage", {})
+        tool_usage = summary.get("tool_usage", {})
+        st.caption(
+            f"This session so far: {summary.get('total_cycles', 0)} reasoning "
+            f"cycles, {usage.get('totalTokens', 0)} tokens."
+        )
+        if tool_usage:
+            st.write(
+                {
+                    name: stats.get("execution_stats", {}).get("call_count", 0)
+                    for name, stats in tool_usage.items()
+                }
+            )
+
+        decisions = store.load_decisions()
+        if decisions:
+            with st.expander("Receipt for the most recent decision"):
+                st.code(ledger.render_receipt(decisions[-1]), language=None)
+
+
 def view_pool() -> None:
     resources_tab, volunteers_tab, shifts_tab = st.tabs(
         ["Donations", "Volunteers", "Shifts"]
@@ -271,11 +361,15 @@ def main() -> None:
     _init_state()
     sidebar()
 
-    tab_daybreak, tab_intake, tab_pool = st.tabs(["📋 Daybreak", "✉ New Intake", "📦 Pool"])
+    tab_daybreak, tab_intake, tab_agent, tab_pool = st.tabs(
+        ["📋 Daybreak", "✉ New Intake", "🤖 Agent", "📦 Pool"]
+    )
     with tab_daybreak:
         view_daybreak()
     with tab_intake:
         view_intake()
+    with tab_agent:
+        view_agent_console()
     with tab_pool:
         view_pool()
 
