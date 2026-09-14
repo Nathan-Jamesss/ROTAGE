@@ -226,6 +226,191 @@ def view_intake() -> None:
             st.code(ledger.render_receipt(decision), language=None)
 
 
+OVERVIEW_CSS = """
+<style>
+.qm-hero{padding:8px 0 4px;}
+.qm-hero h1{font-size:2.6rem; margin-bottom:0; font-weight:800; letter-spacing:-0.01em;}
+.qm-hero .sub{font-size:1.15rem; opacity:0.75; margin-top:4px;}
+.qm-badge{
+  display:inline-block; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
+  padding:4px 10px; border-radius:999px; border:1px solid rgba(127,127,127,0.35);
+  opacity:0.75; margin-bottom:10px;
+}
+.qm-flow{display:flex; gap:8px; align-items:stretch; margin:22px 0 10px; flex-wrap:wrap;}
+.qm-step{
+  flex:1 1 140px; border:1px solid rgba(127,127,127,0.25); border-radius:10px;
+  padding:16px 14px; text-align:center; background:rgba(127,127,127,0.04);
+}
+.qm-step .emoji{font-size:1.8rem; display:block; margin-bottom:6px;}
+.qm-step .label{font-weight:700; font-size:0.95rem;}
+.qm-step .desc{font-size:0.8rem; opacity:0.7; margin-top:4px;}
+.qm-arrow{align-self:center; font-size:1.3rem; opacity:0.35; padding:0 2px;}
+.qm-fork{display:flex; gap:10px; margin-top:10px;}
+.qm-fork > div{flex:1; border-radius:10px; padding:14px; text-align:center; font-size:0.88rem;}
+.qm-fork .ok{background:rgba(39,174,96,0.12); border:1px solid rgba(39,174,96,0.4);}
+.qm-fork .stop{background:rgba(192,57,43,0.10); border:1px solid rgba(192,57,43,0.4);}
+.qm-card{
+  border:1px solid rgba(127,127,127,0.25); border-radius:10px; padding:16px 18px;
+  margin-bottom:10px; background:rgba(127,127,127,0.03);
+}
+.qm-card b{display:block; margin-bottom:4px;}
+.qm-next{
+  border:1px dashed rgba(127,127,127,0.4); border-radius:10px; padding:16px 18px;
+  font-size:0.92rem; opacity:0.85;
+}
+@media (max-width: 640px){ .qm-flow{flex-direction:column;} .qm-arrow{transform:rotate(90deg); align-self:center;} }
+</style>
+"""
+
+
+def view_overview() -> None:
+    st.markdown(OVERVIEW_CSS, unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div class="qm-hero">
+          <span class="qm-badge">Rotary District 3205 · HOPE Prime</span>
+          <h1>Quartermaster</h1>
+          <div class="sub">It knows what not to do.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    mode = st.radio(
+        "Explain it to me like I'm",
+        ["🙂 Simple", "🛠 Technical"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+    simple = mode.startswith("🙂")
+
+    if simple:
+        st.markdown(
+            """
+            Every day, people ask Rotary coordinators for help — a wheelchair,
+            a hospital bed, someone to volunteer at an event. Right now, one
+            person has to read every message and match it up by hand.
+
+            **Quartermaster does that automatically.** It reads each message,
+            checks what's available, and connects the two — instantly, day or
+            night. It only wakes up a real person when something needs a
+            human judgment call: someone elderly or unwell, two people
+            wanting the same thing, or something that just doesn't add up.
+            """
+        )
+    else:
+        st.markdown(
+            """
+            Quartermaster is a **Strands agent** wired to **10 tools**. An LLM
+            (Gemini) extracts structured, confidence-scored facts from each
+            message. A separate, deterministic rules engine — no LLM in this
+            step — decides whether to auto-resolve or escalate, and *why*.
+            Every decision is written to an append-only ledger and can be
+            undone. See the **🤖 Agent** tab to talk to it directly, or the
+            **📋 Daybreak** tab to see it working the overnight queue.
+            """
+        )
+
+    st.markdown("#### How a message moves through it")
+    if simple:
+        st.markdown(
+            """
+            <div class="qm-flow">
+              <div class="qm-step"><span class="emoji">📩</span><div class="label">Message comes in</div><div class="desc">"Need a wheelchair, Kaloor"</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">🧠</span><div class="label">It reads it</div><div class="desc">Figures out what's needed</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">🔍</span><div class="label">Checks what's available</div><div class="desc">Looks for a good match</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">⚖️</span><div class="label">Decides</div><div class="desc">Safe to handle alone?</div></div>
+            </div>
+            <div class="qm-fork">
+              <div class="ok"><b>✅ Yes</b><br>Matched automatically, no one has to lift a finger</div>
+              <div class="stop"><b>🙋 No</b><br>Held for a coordinator, with the reason plainly stated</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            """
+            <div class="qm-flow">
+              <div class="qm-step"><span class="emoji">📩</span><div class="label">Message</div><div class="desc">Need, donation, or shift signup</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">🧬</span><div class="label">Extract</div><div class="desc">Gemini → confidence-scored fields</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">📐</span><div class="label">Match</div><div class="desc">RapidFuzz, explained breakdown</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">🧮</span><div class="label">Threshold</div><div class="desc">9 deterministic rules, T1–T9</div></div>
+              <div class="qm-arrow">→</div>
+              <div class="qm-step"><span class="emoji">📒</span><div class="label">Ledger</div><div class="desc">Recorded, reversible, queued</div></div>
+            </div>
+            <div class="qm-fork">
+              <div class="ok"><b>✅ AUTO_RESOLVED</b><br>Every rule passed</div>
+              <div class="stop"><b>🙋 ESCALATED</b><br>One rule failed, reason attached</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("#### The one guarantee that matters most")
+    if simple:
+        st.markdown(
+            """
+            <div class="qm-card">
+            <b>It will never quietly hand out equipment to someone vulnerable.</b>
+            If a message mentions someone elderly, unwell, a child, or an unsafe
+            situation, Quartermaster doesn't just "try to be careful" — the
+            option to act alone is taken off the table entirely before it can
+            even consider it. A coordinator always makes that call.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            """
+            <div class="qm-card">
+            <b>Vulnerable cases are structurally, not behaviourally, blocked.</b>
+            <code>filter_auto_matchable()</code> strips candidates from the
+            list <i>before</i> the agent ever receives them — there is no
+            actionable option for the model to reason past. Proven by
+            <code>tests/test_threshold.py</code>: a dozen adversarial messages
+            that must escalate, plus a control group of ordinary requests
+            that must not be flagged.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("#### Built for a real program")
+    st.markdown(
+        """
+        <div class="qm-card">
+        Designed around <b>HOPE Prime</b>, Rotary District 3205's real
+        2026–27 flagship project — the Palliative Equipment Library, which
+        lends wheelchairs, walkers, hospital beds, oxygen concentrators, and
+        nebulizers to families who need them temporarily. Seed data uses the
+        district's real clubs and areas across the Cochin, Muvattupuzha, and
+        Thrissur zones.
+        </div>
+        <div class="qm-next">
+        <b>Next step:</b> piloting this with Rotary District 3205's leadership
+        next term. If you're reviewing this as a coordinator or district
+        officer and want to try it on real cases, the 🤖 Agent tab is the
+        place to start.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.caption(
+        "Built for the Agents for Humans Hackathon — Good Neighbor Agents track · "
+        "[GitHub](https://github.com/Nathan-Jamesss/ROTAGE) · MIT licensed"
+    )
+
+
 def _send_to_agent_with_rotation(prompt: str) -> str:
     """Invoke the session's agent, rotating to the next Gemini key on a rate
     limit and rebuilding the agent before retrying — the same pattern
@@ -375,9 +560,11 @@ def main() -> None:
     _init_state()
     sidebar()
 
-    tab_daybreak, tab_intake, tab_agent, tab_pool = st.tabs(
-        ["📋 Daybreak", "✉ New Intake", "🤖 Agent", "📦 Pool"]
+    tab_overview, tab_daybreak, tab_intake, tab_agent, tab_pool = st.tabs(
+        ["🏠 Overview", "📋 Daybreak", "✉ New Intake", "🤖 Agent", "📦 Pool"]
     )
+    with tab_overview:
+        view_overview()
     with tab_daybreak:
         view_daybreak()
     with tab_intake:
