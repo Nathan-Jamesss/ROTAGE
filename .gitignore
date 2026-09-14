@@ -1,0 +1,22 @@
+# secrets
+.env
+
+# local planning docs — not part of the submission
+PROJECT_BRIEF.md
+COMPETITIVE_RESEARCH.md
+BUILD_PLAN.md
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# runtime state (seeded from data/)
+store/*.json
+
+# os
+.DS_Store
+Thumbs.db
