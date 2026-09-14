@@ -9,7 +9,18 @@ is where a coordinator would actually work.
 
 from __future__ import annotations
 
+import os
+
 import streamlit as st
+
+# On Streamlit Community Cloud, keys are entered in the app's Secrets panel
+# (TOML) and surface as st.secrets, not necessarily as real environment
+# variables. Bridge them into os.environ before anything else loads, since
+# llm.py reads keys via os.getenv() — this keeps local .env and cloud secrets
+# working through the identical code path.
+for _name in ("GEMINI_API_KEY", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3"):
+    if _name in st.secrets and not os.getenv(_name):
+        os.environ[_name] = st.secrets[_name]
 
 from quartermaster import deterministic, ledger, llm, pipeline, store, triage
 from quartermaster.schema import HumanAction, Tier
