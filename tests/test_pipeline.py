@@ -25,7 +25,9 @@ from quartermaster.schema import (
 def clean_store(tmp_path, monkeypatch):
     monkeypatch.setattr(store, "STORE_DIR", tmp_path)
     store.reset()
+    pipeline.reset_extractor()
     yield
+    pipeline.reset_extractor()
 
 
 def _extractor(**fields):

@@ -26,6 +26,26 @@ from .schema import (
 
 Extractor = "callable[[str], Extraction]"
 
+# Tools call process_need/process_donation with no explicit extractor, so
+# deterministic mode needs a way to redirect them without changing every call
+# site. Tests that care about determinism pass `extractor=` explicitly
+# instead, which always wins over this override.
+_ACTIVE_EXTRACTOR = None
+
+
+def set_extractor(fn) -> None:
+    global _ACTIVE_EXTRACTOR
+    _ACTIVE_EXTRACTOR = fn
+
+
+def reset_extractor() -> None:
+    global _ACTIVE_EXTRACTOR
+    _ACTIVE_EXTRACTOR = None
+
+
+def _resolve_extractor(explicit):
+    return explicit or _ACTIVE_EXTRACTOR or extract_with_rotation
+
 SKILL_SYNONYMS: dict[str, tuple[str, ...]] = {
     "first_aid": ("first aid", "nurse", "nursing", "medical training", "cpr"),
     "logistics": ("logistics", "loading", "coordination"),
@@ -53,11 +73,9 @@ def _backfill_known_name(extraction: Extraction, known_name: str) -> Extraction:
     return extraction
 
 
-def process_need(
-    requester: str, message: str, *, extractor=extract_with_rotation
-) -> Decision:
+def process_need(requester: str, message: str, *, extractor=None) -> Decision:
     """A need comes in. Extract, rank against the donation pool, decide."""
-    extraction = extractor(message)
+    extraction = _resolve_extractor(extractor)(message)
     extraction.kind = IntakeKind.NEED
     extraction = threshold.merge_vulnerable_flags(extraction, message)
     extraction = _backfill_known_name(extraction, requester)
@@ -108,12 +126,10 @@ def process_need(
     )
 
 
-def process_donation(
-    donor: str, message: str, *, extractor=extract_with_rotation
-) -> Decision:
+def process_donation(donor: str, message: str, *, extractor=None) -> Decision:
     """A donation comes in. Add it to the pool, then search open needs in
     reverse — the same matching engine, pointed the other way."""
-    extraction = extractor(message)
+    extraction = _resolve_extractor(extractor)(message)
     extraction.kind = IntakeKind.DONATION
     extraction = _backfill_known_name(extraction, donor)
 
