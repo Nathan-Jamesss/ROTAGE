@@ -226,6 +226,24 @@ def view_intake() -> None:
             st.code(ledger.render_receipt(decision), language=None)
 
 
+def _send_to_agent_with_rotation(prompt: str) -> str:
+    """Invoke the session's agent, rotating to the next Gemini key on a rate
+    limit and rebuilding the agent before retrying — the same pattern
+    main.py uses for the CLI. Without this, a single visitor tripping one
+    key's 5-requests/minute limit would show an error to the next visitor
+    too, even with nine other configured keys sitting unused."""
+    rot = llm.rotator()
+    while True:
+        try:
+            result = st.session_state.agent_instance(prompt)
+            return str(result)
+        except Exception as error:  # noqa: BLE001
+            if llm.is_rate_limit(error) and rot.rotate():
+                st.session_state.agent_instance = agent_module.build_agent()
+                continue
+            return f"(the agent hit an error: {error})"
+
+
 def view_agent_console() -> None:
     st.subheader("🤖 Talk to the agent directly")
     st.caption(
@@ -276,11 +294,7 @@ def view_agent_console() -> None:
         else:
             with st.spinner("Agent is reading, deciding, and calling a tool..."):
                 prompt = f"Message from {name}: {message}"
-                try:
-                    result = st.session_state.agent_instance(prompt)
-                    reply = str(result)
-                except Exception as error:  # noqa: BLE001
-                    reply = f"(the agent hit an error: {error})"
+                reply = _send_to_agent_with_rotation(prompt)
             st.session_state.agent_transcript.append((name, message, reply))
 
     for who, said, reply in reversed(st.session_state.agent_transcript):
